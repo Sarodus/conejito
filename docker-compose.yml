@@ -1,0 +1,38 @@
+version: "3"
+services:
+  conejito:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - 'rabbitmq_data:/data'
+      # - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config
+
+  creator:
+    build: ./creator/
+    volumes:
+      - ./creator:/data/creator
+    ports:
+      - 5000:5000
+    links:
+      - conejito
+
+  worker-grouper:
+    build: ./workers/
+    volumes:
+      - ./workers:/data/workers
+    command: "python /data/workers/grouper.py"
+    links:
+      - conejito
+
+  worker-single:
+    build: ./workers/
+    volumes:
+      - ./workers:/data/workers
+    command: "python /data/workers/single.py"
+    links:
+      - conejito
+
+volumes:
+  rabbitmq_data:
