@@ -2,6 +2,7 @@
 
 import pika
 import sys
+import logging
 from json import dumps
 
 
@@ -13,6 +14,9 @@ class Task(object):
     def init_app(self, app):
         self.app = app
         self.config = app.config
+        self.connect()
+
+    def connect(self):
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host=self.config['TASK_HOST'])
         )
@@ -25,11 +29,13 @@ class Task(object):
         )
 
     def send(self, queue, routing_key, body):
-        self.channel.basic_publish(
-            exchange='creator',
-            routing_key=routing_key,
-            body=dumps(body).encode(),
-        #     properties=properties or pika.BasicProperties(
-        #         delivery_mode=2,  # make message persistent
-        # )
-        )
+        try:
+            self.channel.basic_publish(
+                exchange='creator',
+                routing_key=routing_key,
+                body=dumps(body).encode(),
+            )
+        except Exception as e:
+            logging.error('ERRRR %s, trying to reconnect...' % e)
+            self.connect()
+            self.send(queue, routing_key, body)
