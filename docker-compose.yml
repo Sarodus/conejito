@@ -42,5 +42,14 @@ services:
     links:
       - conejito
 
+  worker-event-sender:
+    build: ./workers/
+    volumes:
+      - ./workers:/data/workers
+    command: "python /data/workers/event_sender.py"
+    links:
+      - conejito
+      - creator
+
 volumes:
   rabbitmq_data:

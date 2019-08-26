@@ -2,7 +2,7 @@ import random
 import string
 
 from flask import Blueprint, render_template, request
-from .extensions import task
+from ..extensions import task
 
 main = Blueprint('main', 'main')
 

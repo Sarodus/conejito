@@ -16,5 +16,7 @@ class CreatorApp(Flask):
         task.init_app(self)
 
     def setup_views(self):
-        from .views import main
+        from .views.main import main
+        from .views.notify import notify
         self.register_blueprint(main)
+        self.register_blueprint(notify)

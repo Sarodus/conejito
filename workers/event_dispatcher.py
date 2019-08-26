@@ -1,8 +1,5 @@
 import asyncio
-import operator
-import itertools
 import json
-import collections
 import logging
 from aio_pika import connect_robust, Message, ExchangeType
 
@@ -24,16 +21,75 @@ class EventDispatcherConfig:
         await asyncio.sleep(.1)
         self.topics = {
             'booking.create': [
-                'Partner all notifications',
-                'Partner booking creations',
+                {
+                    'description': 'Partner all notifications',
+                    'name': 'WE_WANT_ALL',
+                    'url': 'http://creator:5000/notify/booking_created',
+                    'payload': {
+                        'locator': '$LOCATOR',
+                        'partner_name': 'all notifications'
+                    }
+                },
+                {
+                    'description': 'Partner booking creations',
+                    'name': 'TRIVAGO',
+                    'url': 'http://creator:5000/notify/booking_created',
+                    'payload': {
+                        'locator': '$LOCATOR',
+                        'partner_name': 'booking creations'
+                    }
+                },
             ],
             'booking.modify.#': [
-                'Partner all notifications',
-                'Partner booking modifications'
+                {
+                    'description': 'Partner all notifications',
+                    'name': 'WE_WANT_ALL',
+                    'url': 'http://creator:5000/notify/booking_modified',
+                    'payload': {
+                        'locator': '$LOCATOR',
+                        'partner_name': 'all notifications'
+                    }
+                },
+                {
+                    'description': 'Partner booking modifications',
+                    'url': 'http://creator:5000/notify/booking_modified',
+                    'name': 'CHECK_MODIFICATIONS',
+                    'payload': {
+                        'locator': '$LOCATOR',
+                        'partner_name': 'all modifications'
+                    }
+                },
+            ],
+            'booking.modify.add_room': [
+                {
+                    'description': 'Partner booking add room',
+                    'url': 'http://creator:5000/notify/booking_add_room',
+                    'name': 'MOAR_ROOMS',
+                    'payload': {
+                        'locator': '$LOCATOR',
+                        'partner_name': 'room changes'
+                    }
+                },
             ],
             'booking.cancel': [
-                'Partner all notifications',
-                'Partner booking cancelations'
+                {
+                    'description': 'Partner all notifications',
+                    'name': 'WE_WANT_ALL',
+                    'url': 'http://creator:5000/notify/booking_cancel',
+                    'payload': {
+                        'locator': '$LOCATOR',
+                        'partner_name': 'all modifications'
+                    }
+                },
+                {
+                    'description': 'Partner booking cancelations',
+                    'name': 'TRIVAGO',
+                    'url': 'http://creator:5000/notify/booking_cancel',
+                    'payload': {
+                        'locator': '$LOCATOR',
+                        'partner_name': 'cancelations'
+                    }
+                },
             ]
         }
 
@@ -51,8 +107,8 @@ class EventDispatcher:
             loop=loop
         )
 
-        self.queue_name = 'event_dispatcher'
         self.exchange_name = 'creator'
+        self.out_exchange_name = 'event_sender'
 
         # Creating channel
         self.channel = await self.connection.channel()
@@ -61,12 +117,21 @@ class EventDispatcher:
         self.exchange = await self.channel.declare_exchange(
             self.exchange_name,
             type=ExchangeType.TOPIC,
-            auto_delete=False
+            auto_delete=False,
+            durable=True
+        )
+
+        # Declaring exchange
+        self.out_exchange = await self.channel.declare_exchange(
+            self.out_exchange_name,
+            type=ExchangeType.TOPIC,
+            auto_delete=False,
+            durable=True
         )
 
         self.queues = {}
         for topic, partners in self.config.topics.items():
-            queue_name = topic
+            queue_name = 'event_dispatcher/%s' % topic
             queue = await self.channel.declare_queue(
                 queue_name,
                 auto_delete=False,
@@ -92,14 +157,31 @@ class EventDispatcher:
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
                 async with message.process():
-                    self.dispatch_message(
+                    await self.dispatch_message(
                         message,
                         partners,
                         queue_name,
                     )
 
-    def dispatch_message(self, message, partners, queue_name):
+    async def dispatch_message(self, message, partners, queue_name):
         logging.info('GOT MESSAGE! %s in queue %s with partners %s' % (message.body, queue_name, partners))
+
+        data = json.loads(message.body)
+
+        payload = {
+            'original_message': data
+        }
+        for partner in partners:
+            routing_key = 'send_events_to_integrations.%s' % partner['name']
+            payload['partner_info'] = partner
+            body = json.dumps(payload).encode()
+            logging.warning('SEND MSG %s' % payload)
+            await self.out_exchange.publish(
+                Message(
+                    body=body
+                ),
+                routing_key=routing_key
+            )
 
 
 async def main(loop):
