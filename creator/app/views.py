@@ -41,8 +41,9 @@ def generate_locators():
 
 METHODS = (
     'booking.create',
-    'booking.add_room',
-    'booking.remove_room',
+    'booking.modify.add_room',
+    'booking.modify.remove_room',
+    'booking.cancel',
 )
 
 LOCATORS = generate_locators()

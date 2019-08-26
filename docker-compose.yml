@@ -34,5 +34,13 @@ services:
     links:
       - conejito
 
+  worker-event-dispatcher:
+    build: ./workers/
+    volumes:
+      - ./workers:/data/workers
+    command: "python /data/workers/event_dispatcher.py"
+    links:
+      - conejito
+
 volumes:
   rabbitmq_data:
