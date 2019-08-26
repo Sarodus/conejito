@@ -24,7 +24,7 @@ class EventDispatcherConfig:
                 {
                     'description': 'Partner all notifications',
                     'name': 'WE_WANT_ALL',
-                    'url': 'http://creator:5000/notify/booking_created',
+                    'url': 'http://notifications:8000/notify/booking_created',
                     'payload': {
                         'locator': '$LOCATOR',
                         'partner_name': 'all notifications'
@@ -33,7 +33,7 @@ class EventDispatcherConfig:
                 {
                     'description': 'Partner booking creations',
                     'name': 'TRIVAGO',
-                    'url': 'http://creator:5000/notify/booking_created',
+                    'url': 'http://notifications:8000/notify/booking_created',
                     'payload': {
                         'locator': '$LOCATOR',
                         'partner_name': 'booking creations'
@@ -44,7 +44,7 @@ class EventDispatcherConfig:
                 {
                     'description': 'Partner all notifications',
                     'name': 'WE_WANT_ALL',
-                    'url': 'http://creator:5000/notify/booking_modified',
+                    'url': 'http://notifications:8000/notify/booking_modified',
                     'payload': {
                         'locator': '$LOCATOR',
                         'partner_name': 'all notifications'
@@ -52,7 +52,7 @@ class EventDispatcherConfig:
                 },
                 {
                     'description': 'Partner booking modifications',
-                    'url': 'http://creator:5000/notify/booking_modified',
+                    'url': 'http://notifications:8000/notify/booking_modified',
                     'name': 'CHECK_MODIFICATIONS',
                     'payload': {
                         'locator': '$LOCATOR',
@@ -63,7 +63,7 @@ class EventDispatcherConfig:
             'booking.modify.add_room': [
                 {
                     'description': 'Partner booking add room',
-                    'url': 'http://creator:5000/notify/booking_add_room',
+                    'url': 'http://notifications:8000/notify/booking_add_room',
                     'name': 'MOAR_ROOMS',
                     'payload': {
                         'locator': '$LOCATOR',
@@ -75,7 +75,7 @@ class EventDispatcherConfig:
                 {
                     'description': 'Partner all notifications',
                     'name': 'WE_WANT_ALL',
-                    'url': 'http://creator:5000/notify/booking_cancel',
+                    'url': 'http://notifications:8000/notify/booking_cancel',
                     'payload': {
                         'locator': '$LOCATOR',
                         'partner_name': 'all modifications'
@@ -84,7 +84,7 @@ class EventDispatcherConfig:
                 {
                     'description': 'Partner booking cancelations',
                     'name': 'TRIVAGO',
-                    'url': 'http://creator:5000/notify/booking_cancel',
+                    'url': 'http://notifications:8000/notify/booking_cancel',
                     'payload': {
                         'locator': '$LOCATOR',
                         'partner_name': 'cancelations'

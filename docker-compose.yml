@@ -18,21 +18,30 @@ services:
     links:
       - conejito
 
-  worker-grouper:
-    build: ./workers/
+  notifications:
+    build: ./notifications/
     volumes:
-      - ./workers:/data/workers
-    command: "python /data/workers/grouper.py"
+      - ./notifications:/data/notifications
+    ports:
+      - 8000:8000
     links:
       - conejito
 
-  worker-single:
-    build: ./workers/
-    volumes:
-      - ./workers:/data/workers
-    command: "python /data/workers/single.py"
-    links:
-      - conejito
+  # worker-grouper:
+  #   build: ./workers/
+  #   volumes:
+  #     - ./workers:/data/workers
+  #   command: "python /data/workers/grouper.py"
+  #   links:
+  #     - conejito
+
+  # worker-single:
+  #   build: ./workers/
+  #   volumes:
+  #     - ./workers:/data/workers
+  #   command: "python /data/workers/single.py"
+  #   links:
+  #     - conejito
 
   worker-event-dispatcher:
     build: ./workers/
@@ -49,7 +58,7 @@ services:
     command: "python /data/workers/event_sender.py"
     links:
       - conejito
-      - creator
+      - notifications
 
 volumes:
   rabbitmq_data:
