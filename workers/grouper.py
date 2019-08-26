@@ -70,13 +70,13 @@ async def group_messages(channel):
         messages = []
         while not messages_queue.empty():
             messages.append(messages_queue.get())
-        logging.warning('Group %s messages into one' % len(messages))
+
 
         grouper_func = operator.itemgetter('locator')
         messages = sorted(messages, key=grouper_func)
 
-        for groupper, messages in itertools.groupby(messages, key=grouper_func):
-            body = json.dumps(next(messages)).encode()
+        for i, (groupper, msgs) in enumerate(itertools.groupby(messages, key=grouper_func)):
+            body = json.dumps(next(msgs)).encode()
             await exchange.publish(
                 Message(
                     body=body
@@ -84,6 +84,10 @@ async def group_messages(channel):
                 routing_key=routing_key
             )
 
+        logging.warning('Group %s messages into %s' % (
+            len(messages),
+            i
+        ))
 
 
 if __name__ == "__main__":
