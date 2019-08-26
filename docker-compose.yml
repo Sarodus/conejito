@@ -8,6 +8,11 @@ services:
     volumes:
       - 'rabbitmq_data:/data'
       # - ./rabbitmq.config:/etc/rabbitmq/rabbitmq.config
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:15672"]
+      interval: 30s
+      timeout: 20s
+      retries: 50
 
   creator:
     build: ./creator/
@@ -16,6 +21,9 @@ services:
     ports:
       - 5000:5000
     links:
+      - conejito
+    restart: on-failure
+    depends_on:
       - conejito
 
   notifications:
@@ -26,6 +34,9 @@ services:
       - 8000:8000
     links:
       - conejito
+    restart: on-failure
+    depends_on:
+      - conejito
 
   # worker-grouper:
   #   build: ./workers/
@@ -33,6 +44,8 @@ services:
   #     - ./workers:/data/workers
   #   command: "python /data/workers/grouper.py"
   #   links:
+  #     - conejito
+  #   depends_on:
   #     - conejito
 
   # worker-single:
@@ -42,6 +55,8 @@ services:
   #   command: "python /data/workers/single.py"
   #   links:
   #     - conejito
+  #   depends_on:
+  #     - conejito
 
   worker-event-dispatcher:
     build: ./workers/
@@ -49,6 +64,9 @@ services:
       - ./workers:/data/workers
     command: "python /data/workers/event_dispatcher.py"
     links:
+      - conejito
+    restart: on-failure
+    depends_on:
       - conejito
 
   worker-event-sender:
@@ -59,6 +77,9 @@ services:
     links:
       - conejito
       - notifications
+    restart: on-failure
+    depends_on:
+      - conejito
 
 volumes:
   rabbitmq_data:
