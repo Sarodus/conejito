@@ -17,13 +17,19 @@ class Task(object):
             pika.ConnectionParameters(host=self.config['TASK_HOST'])
         )
         self.channel = self.connection.channel()
+        self.channel.exchange_declare(
+            exchange='creator',
+            exchange_type='topic',
+            auto_delete=False,
+            durable=True
+        )
 
-    def send(self, queue, routing_key, body, exchange='creator', durable=True, properties=None):
-        self.channel.queue_declare(queue=queue, durable=durable)
+    def send(self, queue, routing_key, body):
         self.channel.basic_publish(
-            exchange=exchange,
+            exchange='creator',
             routing_key=routing_key,
-            body=dumps(body),
-            properties=properties or pika.BasicProperties(
-                delivery_mode=2,  # make message persistent
-        ))
+            body=dumps(body).encode(),
+        #     properties=properties or pika.BasicProperties(
+        #         delivery_mode=2,  # make message persistent
+        # )
+        )

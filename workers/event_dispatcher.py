@@ -135,7 +135,7 @@ class EventDispatcher:
             queue = await self.channel.declare_queue(
                 queue_name,
                 auto_delete=False,
-                exclusive=True
+                durable=True
             )
             self.queues[queue_name] = (queue, partners)
 
